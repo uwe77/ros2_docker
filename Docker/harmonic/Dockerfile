@@ -37,6 +37,7 @@ RUN apt-get update && \
     dirmngr \
     gnupg2 \
     git \
+    gitk git-gui \
     vim \
     less \
     curl \
