@@ -4,3 +4,6 @@
 [submodule "ros2_ws/src/ardupilot_gazebo"]
 	path = ros2_ws/src/ardupilot_gazebo
 	url = git@github.com:uwe77/ardupilot_gazebo.git
+[submodule "ros2_ws/src/ardupilot"]
+	path = ros2_ws/src/ardupilot
+	url = git@github.com:uwe77/ardupilot.git
