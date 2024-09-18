@@ -56,16 +56,9 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
     apt-get update && apt-get install -y --no-install-recommends \
     ros-${ROS_DISTRO}-desktop \
-    ros-dev-tools \
-    && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# install colcon and rosdep
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        python3-colcon-common-extensions \
-        python3-rosdep \
-        && \
+    python3-colcon-common-extensions \
+    python3-rosdep \
+    ros-dev-tools && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -75,7 +68,11 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
     apt-get update && \
     apt-get install -y \
     gz-${GZ_VERSION} \
-    ros-${ROS_DISTRO}-ros-gz${GZ_VERSION}
+    ros-${ROS_DISTRO}-ros-gz${GZ_VERSION} && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rosdep init && \
+    rosdep update
 
 ###################################### python pkg###############################
 RUN apt-get update && apt-get upgrade pip -y && \
@@ -92,28 +89,35 @@ RUN apt-get update && apt-get upgrade pip -y && \
     pyyaml \
     pyquaternion \
     pyserial
-###################################### ardupilot ################################
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     lsb-release \
-#     sudo \
-#     tzdata \
-#     bash-completion \
-#     libgz-sim8-dev rapidjson-dev \
-#     libopencv-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-gl && \
-#     cd /opt && git clone https://github.com/uwe77/ardupilot.git && \
-#     echo "${NB_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${NB_USER} && \
-#     chmod 0440 /etc/sudoers.d/${NB_USER} && \
-#     chown -R ${NB_USER}:${NB_USER} /opt/ardupilot
-#  # Create non root user for pip
-    
-# USER ${NB_USER}
-# RUN cd /opt/ardupilot && \
-#     SKIP_AP_EXT_ENV=$SKIP_AP_EXT_ENV SKIP_AP_GRAPHIC_ENV=$SKIP_AP_GRAPHIC_ENV SKIP_AP_COV_ENV=$SKIP_AP_COV_ENV SKIP_AP_GIT_CHECK=$SKIP_AP_GIT_CHECK \
-#     DO_AP_STM_ENV=$DO_AP_STM_ENV \
-#     AP_DOCKER_BUILD=1 \
-#     USER=${NB_USER} \
-#     Tools/environment_install/install-prereqs-ubuntu.sh -y
-# USER root
+
+###################################### ardupilot gz ################################
+RUN apt-get update && \
+    apt-get install -q -y --no-install-recommends \
+    libgz-sim8-dev \
+    rapidjson-dev \
+    libopencv-dev \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-libav \
+    gstreamer1.0-gl
+
+RUN bash -c 'wget https://raw.githubusercontent.com/osrf/osrf-rosdep/master/gz/00-gazebo.list -O /etc/ros/rosdep/sources.list.d/00-gazebo.list' && \
+    rosdep update && \
+    rosdep resolve gz-${GZ_VERSION} && \
+    mkdir -p ${HOME}/ros2_ws/src && \
+    rosdep install --from-paths ${HOME}/ros2_ws/src --ignore-src -y && \
+    rm -r ${HOME}/ros2_ws
+
+RUN cd /opt && \
+    git clone https://github.com/ArduPilot/ardupilot_gazebo && \
+    cd ardupilot_gazebo && \
+    mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo && \
+    make -j4
+
+ENV GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ardupilot_gazebo/build:$GZ_SIM_SYSTEM_PLUGIN_PATH \
+    GZ_SIM_RESOURCE_PATH=/opt/ardupilot_gazebo/models:/opt/ardupilot_gazebo/worlds:$GZ_SIM_RESOURCE_PATH
 
 RUN echo "root ALL=(ALL)  ALL" >> /etc/sudoers \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc 
