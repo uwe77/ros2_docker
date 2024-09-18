@@ -9,7 +9,6 @@ ARG SKIP_AP_GIT_CHECK=1
 ARG DO_AP_STM_ENV=1
 
 ENV ROS_DISTRO=humble \
-    GAZ=gz-harmonic \
     GZ_VERSION=harmonic \
     SHELL=/bin/bash \
     NB_USER=uwe \
@@ -34,6 +33,7 @@ ENV HOME=/home/${NB_USER}
 RUN apt-get update && \
     apt-get install -q -y --no-install-recommends \
     tzdata \
+    pip \
     dirmngr \
     gnupg2 \
     git \
@@ -73,30 +73,47 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
     apt-get update && \
-    apt-get install -y ${GAZ}
+    apt-get install -y \
+    gz-${GZ_VERSION} \
+    ros-${ROS_DISTRO}-ros-gz${GZ_VERSION}
 
+###################################### python pkg###############################
+RUN apt-get update && upgrade pip && \
+    pip install --upgrade pip && \
+    pip install \
+    numpy \
+    scipy \
+    matplotlib \
+    scikit-learn \
+    scikit-image \
+    pandas \
+    opencv-python \
+    opencv-python-headless \
+    pyyaml \
+    pyquaternion \
+    pyserial
 ###################################### ardupilot ################################
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    lsb-release \
-    sudo \
-    tzdata \
-    bash-completion \
-    libgz-sim8-dev rapidjson-dev \
-    libopencv-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-gl && \
-    cd /opt && git clone https://github.com/uwe77/ardupilot.git && \
-    echo "${NB_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${NB_USER} && \
-    chmod 0440 /etc/sudoers.d/${NB_USER} && \
-    chown -R ${NB_USER}:${NB_USER} /opt/ardupilot
- # Create non root user for pip
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     lsb-release \
+#     sudo \
+#     tzdata \
+#     bash-completion \
+#     libgz-sim8-dev rapidjson-dev \
+#     libopencv-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-gl && \
+#     cd /opt && git clone https://github.com/uwe77/ardupilot.git && \
+#     echo "${NB_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${NB_USER} && \
+#     chmod 0440 /etc/sudoers.d/${NB_USER} && \
+#     chown -R ${NB_USER}:${NB_USER} /opt/ardupilot
+#  # Create non root user for pip
     
-USER ${NB_USER}
-RUN cd /opt/ardupilot && \
-    SKIP_AP_EXT_ENV=$SKIP_AP_EXT_ENV SKIP_AP_GRAPHIC_ENV=$SKIP_AP_GRAPHIC_ENV SKIP_AP_COV_ENV=$SKIP_AP_COV_ENV SKIP_AP_GIT_CHECK=$SKIP_AP_GIT_CHECK \
-    DO_AP_STM_ENV=$DO_AP_STM_ENV \
-    AP_DOCKER_BUILD=1 \
-    USER=${NB_USER} \
-    Tools/environment_install/install-prereqs-ubuntu.sh -y
-USER root
+# USER ${NB_USER}
+# RUN cd /opt/ardupilot && \
+#     SKIP_AP_EXT_ENV=$SKIP_AP_EXT_ENV SKIP_AP_GRAPHIC_ENV=$SKIP_AP_GRAPHIC_ENV SKIP_AP_COV_ENV=$SKIP_AP_COV_ENV SKIP_AP_GIT_CHECK=$SKIP_AP_GIT_CHECK \
+#     DO_AP_STM_ENV=$DO_AP_STM_ENV \
+#     AP_DOCKER_BUILD=1 \
+#     USER=${NB_USER} \
+#     Tools/environment_install/install-prereqs-ubuntu.sh -y
+# USER root
 
 RUN echo "root ALL=(ALL)  ALL" >> /etc/sudoers \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc 
