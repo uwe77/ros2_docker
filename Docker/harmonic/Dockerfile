@@ -105,11 +105,8 @@ RUN apt-get update && \
 RUN bash -c 'wget https://raw.githubusercontent.com/osrf/osrf-rosdep/master/gz/00-gazebo.list -O /etc/ros/rosdep/sources.list.d/00-gazebo.list' && \
     rosdep update && \
     rosdep resolve gz-${GZ_VERSION} && \
-    mkdir -p ${HOME}/ros2_ws/src && \
-    rosdep install --from-paths ${HOME}/ros2_ws/src --ignore-src -y && \
-    rm -r ${HOME}/ros2_ws
-
-RUN cd /opt && \
+    rosdep install --from-paths /opt/ros/${ROS_DISTRO}/src --ignore-src -y && \
+    cd /opt && \
     git clone https://github.com/ArduPilot/ardupilot_gazebo && \
     cd ardupilot_gazebo && \
     mkdir build && cd build && \
@@ -118,6 +115,17 @@ RUN cd /opt && \
 
 ENV GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ardupilot_gazebo/build:$GZ_SIM_SYSTEM_PLUGIN_PATH \
     GZ_SIM_RESOURCE_PATH=/opt/ardupilot_gazebo/models:/opt/ardupilot_gazebo/worlds:$GZ_SIM_RESOURCE_PATH
+    
+RUN cd /opt/ros/${ROS_DISTRO} && \
+    vcs import --input https://raw.githubusercontent.com/ArduPilot/ardupilot_gz/main/ros2_gz.repos --recursive src && \
+    apt update && \
+    rosdep update && \
+    rosdep install --from-paths src --ignore-src -r -y && cd /opt/ros/${ROS_DISTRO} \
+    colcon build --packages-up-to ardupilot_gz_bringup
+
+
+
+
 
 RUN echo "root ALL=(ALL)  ALL" >> /etc/sudoers \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc 
