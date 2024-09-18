@@ -78,7 +78,7 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
     ros-${ROS_DISTRO}-ros-gz${GZ_VERSION}
 
 ###################################### python pkg###############################
-RUN apt-get update && upgrade pip && \
+RUN apt-get update && apt-get upgrade pip -y && \
     pip install --upgrade pip && \
     pip install \
     numpy \
