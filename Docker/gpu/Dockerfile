@@ -48,31 +48,10 @@ RUN apt-get update && \
     lsb-release \
     gnupg \
     build-essential \
+    libcgal-dev \
+    libfftw3-dev \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
-
-###################################### ros2 ####################################
-RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
-    apt-get update && apt-get install -y --no-install-recommends \
-    ros-${ROS_DISTRO}-desktop \
-    python3-colcon-common-extensions \
-    python3-rosdep \
-    ros-dev-tools && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-###################################### gazebo ##################################
-RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
-    apt-get update && \
-    apt-get install -y \
-    gz-${GZ_VERSION} \
-    ros-${ROS_DISTRO}-ros-gz${GZ_VERSION} && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    rosdep init && \
-    rosdep update
 
 ###################################### python pkg###############################
 RUN apt-get update && apt-get upgrade pip -y && \
@@ -89,6 +68,33 @@ RUN apt-get update && apt-get upgrade pip -y && \
     pyyaml \
     pyquaternion \
     pyserial
+
+###################################### ros2 ####################################
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    ros-${ROS_DISTRO}-desktop \
+    ros-${ROS_DISTRO}-ros2-control \
+    ros-${ROS_DISTRO}-ros2-controllers \
+    ros-${ROS_DISTRO}-joy* \
+    ros-${ROS_DISTRO}-joint-state-publisher \
+    python3-colcon-common-extensions \
+    python3-rosdep \
+    ros-dev-tools && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+###################################### gazebo ##################################
+RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
+    apt-get update && \
+    apt-get install -y \
+    gz-${GZ_VERSION} \
+    ros-${ROS_DISTRO}-ros-gz${GZ_VERSION} && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rosdep init && \
+    rosdep update
+RUN  mkdir -p ${HOME}/gz_ws/src
 
 ###################################### ardupilot gz ################################
 RUN apt-get update && \
@@ -107,7 +113,7 @@ RUN apt-get update && \
 RUN bash -c 'wget https://raw.githubusercontent.com/osrf/osrf-rosdep/master/gz/00-gazebo.list -O /etc/ros/rosdep/sources.list.d/00-gazebo.list' && \
     rosdep update && \
     rosdep resolve gz-${GZ_VERSION} && \
-    rosdep install --from-paths /opt/ros/${ROS_DISTRO}/src --ignore-src -y && \
+    rosdep install --from-paths ${HOME}/gz_ws/src --ignore-src -y && \
     cd /opt && \
     git clone https://github.com/ArduPilot/ardupilot_gazebo && \
     cd ardupilot_gazebo && \
@@ -118,9 +124,25 @@ RUN bash -c 'wget https://raw.githubusercontent.com/osrf/osrf-rosdep/master/gz/0
 ENV GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ardupilot_gazebo/build:$GZ_SIM_SYSTEM_PLUGIN_PATH \
     GZ_SIM_RESOURCE_PATH=/opt/ardupilot_gazebo/models:/opt/ardupilot_gazebo/worlds:$GZ_SIM_RESOURCE_PATH
 
+###################################### asv water sim ################################
+RUN cd ${HOME}/gz_ws/src && \
+    git clone https://github.com/uwe77/asv_wave_sim.git && cd .. && \
+    colcon build --symlink-install --merge-install --cmake-args \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DBUILD_TESTING=ON \
+    -DCMAKE_CXX_STANDARD=17 && \
+    cd ${HOME}/gz_ws/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control && \
+    mkdir build && cd build && \
+    cmake .. && make
+
+ENV GZ_SIM_RESOURCE_PATH=${HOME}/gz_ws/src/asv_wave_sim/gz-waves-models/models:${HOME}/gz_ws/src/asv_wave_sim/gz-waves-models/world_models:${HOME}/gz_ws/src/asv_wave_sim/gz-waves-models/worlds:$GZ_SIM_RESOURCE_PATH \
+    GZ_SIM_SYSTEM_PLUGIN_PATH=${HOME}/gz_ws/install/lib:$GZ_SIM_SYSTEM_PLUGIN_PATH \
+    GZ_GUI_PLUGIN_PATH=${HOME}/gz_ws/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control/build:$GZ_GUI_PLUGIN_PATH
+
 
 RUN echo "root ALL=(ALL)  ALL" >> /etc/sudoers \
-    && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc 
+    && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc \
+    && echo "source ${HOME}/gz_ws/install/setup.bash" >> ${HOME}/.bashrc
 
 ENV XLA_PYTHON_CLIENT_PREALLOCATE=false
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
