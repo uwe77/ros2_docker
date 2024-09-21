@@ -23,6 +23,7 @@ setup(
     entry_points={
         'console_scripts': [
             'test_node = test_pkg.test_node:main',
+            'my_joystick = test_pkg.my_joystick:main',
         ],
     },
 )
