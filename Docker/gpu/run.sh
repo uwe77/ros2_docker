@@ -46,6 +46,7 @@ docker run \
   --runtime=nvidia \
   -e DISPLAY \
   -e XAUTHORITY=$XAUTH \
+  -e REPO_NAME=$REPO_NAME \
   -e HOME=/home/${USER_NAME} \
   -e OPENAI_API_KEY=$OPENAI_API_KEY\
   -e NVIDIA_DRIVER_CAPABILITIES=all \
