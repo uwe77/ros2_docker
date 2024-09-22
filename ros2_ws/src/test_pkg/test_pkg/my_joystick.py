@@ -5,19 +5,21 @@ from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 
 class JoystickController(Node):
-    def __init__(self):
-        super().__init__('joystick_controller')
-        # Subscriber to the /joy topic
+    def __init__(self, group_name=''):
+        # Initialize node with namespace (group_name) if provided
+        super().__init__('joystick_controller', namespace=group_name)
+
+        # Subscriber to the /joy topic (this will be under /group_name/joystick_controller/joy)
         self.joy_subscription = self.create_subscription(
             Joy,
-            '/joy',
+            'joy',  # Topic will be prefixed with the namespace
             self.joy_callback,
             10
         )
         self.joy_subscription  # prevent unused variable warning
 
-        # Publisher to control robot movement (assume /cmd_vel for a mobile robot)
-        self.cmd_vel_publisher = self.create_publisher(Twist, '/cmd_vel', 10)
+        # Publisher to control robot movement (this will be under /group_name/joystick_controller/cmd_vel)
+        self.cmd_vel_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
 
         # Variable to hold the axes and button values from the joystick
         self.axes = []
@@ -47,7 +49,15 @@ class JoystickController(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    joystick_controller = JoystickController()
+
+    # Initialize group_name with a default value if args is None
+    group_name = ''
+    
+    if args is not None and len(args) > 1:
+        group_name = args[1]  # Assuming the second argument is the group name
+
+    # Create the joystick controller node with the namespace (group_name)
+    joystick_controller = JoystickController(group_name)
 
     rclpy.spin(joystick_controller)
 
@@ -56,5 +66,7 @@ def main(args=None):
     rclpy.shutdown()
 
 
+
 if __name__ == '__main__':
-    main()
+    import sys
+    main(args=sys.argv)
