@@ -3,6 +3,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float64
 
 class JoystickController(Node):
     def __init__(self, group_name=''):
@@ -18,8 +19,9 @@ class JoystickController(Node):
         )
         self.joy_subscription  # prevent unused variable warning
 
-        # Publisher to control robot movement (this will be under /group_name/joystick_controller/cmd_vel)
-        self.cmd_vel_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
+        # Publishers for the port and starboard motor thrust commands
+        self.port_motor_publisher = self.create_publisher(Float64, '/model/blueboat/joint/motor_port_joint/cmd_thrust', 10)
+        self.stbd_motor_publisher = self.create_publisher(Float64, '/model/blueboat/joint/motor_stbd_joint/cmd_thrust', 10)
 
         # Variable to hold the axes and button values from the joystick
         self.axes = []
@@ -30,30 +32,37 @@ class JoystickController(Node):
         self.axes = msg.axes
         self.buttons = msg.buttons
 
-        # Create a Twist message for robot movement
-        twist = Twist()
+        # Get linear and angular velocities from joystick axes (map as needed)
+        linear_speed = self.axes[1]  # Assuming forward/backward on axis 1
+        angular_speed = self.axes[0]  # Assuming turning on axis 0
 
-        # Map joystick axes to robot control (for example, axis 1 for linear speed and axis 0 for angular velocity)
-        linear_speed = self.axes[1] * 1.0  # Scale this value based on your robot's needs
-        angular_speed = self.axes[0] * 1.0  # Scale this value as needed
+        # Calculate thrust for each motor
+        port_thrust = Float64()
+        stbd_thrust = Float64()
 
-        twist.linear.x = linear_speed
-        twist.angular.z = angular_speed
+        # Simple differential drive logic: adjust thrust based on linear and angular speeds
+        port_thrust.data = (linear_speed - angular_speed) * 70  # scale by motor multiplier
+        stbd_thrust.data = (linear_speed + angular_speed) * 70  # scale by motor multiplier
 
-        # Publish the Twist message to control the robot
-        self.cmd_vel_publisher.publish(twist)
+        # Publish thrust commands for both motors
+        self.port_motor_publisher.publish(port_thrust)
+        self.stbd_motor_publisher.publish(stbd_thrust)
 
-        # Log the joystick state
-        self.get_logger().info(f'Linear: {linear_speed}, Angular: {angular_speed}')
+        # Log the values for debugging
+        self.get_logger().info(f'Port Thrust: {port_thrust.data}, Starboard Thrust: {stbd_thrust.data}')
 
 
 def main(args=None):
+    # Initialize the rclpy library
     rclpy.init(args=args)
 
-    # Initialize group_name with a default value if args is None
+    # Check if args is None and handle it gracefully
+    if args is None:
+        args = []
+
+    # Extract group_name from arguments (if provided)
     group_name = ''
-    
-    if args is not None and len(args) > 1:
+    if len(args) > 1:
         group_name = args[1]  # Assuming the second argument is the group name
 
     # Create the joystick controller node with the namespace (group_name)
@@ -64,7 +73,6 @@ def main(args=None):
     # Shutdown once we're done
     joystick_controller.destroy_node()
     rclpy.shutdown()
-
 
 
 if __name__ == '__main__':

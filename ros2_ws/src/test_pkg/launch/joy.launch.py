@@ -1,11 +1,12 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, GroupAction
-from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import PushRosNamespace
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch.actions import GroupAction
 
 def generate_launch_description():
-    # Declare the launch argument for the group (namespace)
+    # Declare a launch argument for the group (namespace)
     group_name = LaunchConfiguration('group_name')
 
     return LaunchDescription([
@@ -15,8 +16,8 @@ def generate_launch_description():
             default_value='robot1',
             description='Namespace for the nodes'
         ),
-        
-        # Group the nodes under a specific namespace
+
+        # Group the joystick_controller and joy_node under a specific namespace
         GroupAction([
             # Push the namespace (e.g., robot1)
             PushRosNamespace(group_name),
