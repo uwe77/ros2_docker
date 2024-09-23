@@ -1,0 +1,9 @@
+- ros_topic_name: "/arg_wamv/left_propeller_joint/cmd_thrust"
+  gz_topic_name: "/model/wamv-v/joint/left_propeller_joint/cmd_thrust"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+
+- ros_topic_name: "/arg_wamv/right_propeller_joint/cmd_thrust"
+  gz_topic_name: "/model/wamv-v/joint/right_propeller_joint/cmd_thrust"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"

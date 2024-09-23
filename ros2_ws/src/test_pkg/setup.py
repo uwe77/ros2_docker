@@ -24,7 +24,9 @@ setup(
     entry_points={
         'console_scripts': [
             'test_node = test_pkg.test_node:main',
-            'my_joystick = test_pkg.my_joystick:main',
+            'joy_blueboat = test_pkg.joy_blueboat:main',
+            'joy_car = test_pkg.joy_car:main',
+            'joy_wamv = test_pkg.joy_wamv:main',
         ],
     },
 )

@@ -8,7 +8,6 @@ from launch.substitutions import PathJoinSubstitution
 
 def generate_launch_description():
     # Define the path to the world file
-    arg_gz_package_path = get_package_share_directory('arg_gz')
     # world_path = os.path.join(arg_gz_package_path, 'worlds', 'waves.sdf')
     def get_gz_resource_paths(model_name: str = 'blueboat'):
         # Get the GZ_RESOURCE_PATH from the environment

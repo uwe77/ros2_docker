@@ -13,7 +13,7 @@ def generate_launch_description():
         # Declare a launch argument to accept group_name from the command line
         DeclareLaunchArgument(
             'group_name',
-            default_value='robot1',
+            default_value='racecar',
             description='Namespace for the nodes'
         ),
 
@@ -25,8 +25,8 @@ def generate_launch_description():
             # Launch the joystick_controller node
             Node(
                 package='test_pkg',
-                executable='my_joystick',
-                name='my_joystick',
+                executable='joy_car',
+                name='joy_car',
                 output='screen'
             ),
 

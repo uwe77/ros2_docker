@@ -8,7 +8,7 @@ from std_msgs.msg import Float64
 class JoystickController(Node):
     def __init__(self, group_name=''):
         # Initialize node with namespace (group_name) if provided
-        super().__init__('joystick_controller', namespace=group_name)
+        super().__init__('joy_blueboat', namespace=group_name)
 
         # Subscriber to the /joy topic (this will be under /group_name/joystick_controller/joy)
         self.joy_subscription = self.create_subscription(
