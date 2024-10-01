@@ -6,7 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=humble \
     GZ_VERSION=harmonic \
     SHELL=/bin/bash \
-    NB_USER=uwe \
+    NB_USER=arg \
     NB_UID=1000
 
 RUN echo 'Etc/UTC' > /etc/timezone && \
