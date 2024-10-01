@@ -220,7 +220,8 @@ ENV GZ_SIM_RESOURCE_PATH=${ARDU_WS}/src/ardupilot_gazebo/worlds:${ARDU_WS}/src/a
 
 RUN echo "root ALL=(ALL)  ALL" >> /etc/sudoers \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc \
-    && echo "source ${ARDU_WS}/install/setup.bash" >> ${HOME}/.bashrc
+    && echo "source ${ARDU_WS}/install/setup.bash" >> ${HOME}/.bashrc \
+    && echo "source ${GZ_ENV_WS}/install/setup.bash" >> ${HOME}/.bashrc
 
 ENV XLA_PYTHON_CLIENT_PREALLOCATE=false
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
