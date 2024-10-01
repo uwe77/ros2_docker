@@ -132,6 +132,7 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
     ros-${ROS_DISTRO}-rcl-interfaces \
     ros-${ROS_DISTRO}-urdf \
     ros-${ROS_DISTRO}-geographic-msgs \
+    ros-${ROS_DISTRO}-topic-tools \
     ros-dev-tools \
     ros-${ROS_DISTRO}-launch-pytest \
     python3-colcon-common-extensions \
@@ -151,8 +152,8 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
     libgz-sim8-dev \
     libgz-transport13-dev \
     libsdformat14-dev \
-    gz-${GZ_VERSION} && \
-    apt-get clean && \
+    gz-${GZ_VERSION} \
+    && apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rosdep init && \
     rosdep update
@@ -197,7 +198,10 @@ RUN mkdir -p ${ARDU_WS}/src && \
     ./waf configure --board sitl && \
     ./waf rover
     
-RUN /bin/bash -c "source /opt/ros/humble/setup.bash && cd ${ARDU_WS} && colcon build --packages-select actuator_msgs && colcon build --packages-skip actuator_msgs"
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
+cd ${ARDU_WS} && \
+colcon build --packages-select actuator_msgs && \
+colcon build --packages-skip actuator_msgs"
 
 
 ENV PATH=$PATH:${ARDU_WS}/src/ardupilot/Tools/autotest
@@ -214,9 +218,10 @@ RUN cd ${ARDU_WS}/src && \
     cd ${ARDU_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control && \
     mkdir build && cd build && \
     cmake .. && make
-ENV GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/world_models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/worlds \
-    GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_SYSTEM_PLUGIN_PATH:${ARDU_WS}/install/lib \
-    GZ_GUI_PLUGIN_PATH=$GZ_GUI_PLUGIN_PATH:${ARDU_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control/build
+    
+ENV GZ_SIM_RESOURCE_PATH=${ARDU_WS}/src/ardupilot_gazebo/worlds:${ARDU_WS}/src/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/world_models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/worlds \
+    GZ_SIM_SYSTEM_PLUGIN_PATH=${ARDU_WS}/install/ardupilot_gazebo/lib/ardupilot_gazebo:${ARDU_WS}/install/lib \
+    GZ_GUI_PLUGIN_PATH=${ARDU_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control/build
 
 ###################################### aew
 
