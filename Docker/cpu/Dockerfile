@@ -213,10 +213,10 @@ RUN mkdir -p ${GZ_ENV_WS}/src && \
     cd ${GZ_ENV_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control && \
     mkdir build && cd build && \
     cmake .. && make
-    
-ENV GZ_SIM_RESOURCE_PATH=${ARDU_WS}/src/ardupilot_gazebo/worlds:${ARDU_WS}/src/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/world_models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/worlds \
+
+ENV GZ_SIM_RESOURCE_PATH=${ARDU_WS}/src/ardupilot_gazebo/worlds:${ARDU_WS}/src/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:${GZ_ENV_WS}/src/asv_wave_sim/gz-waves-models/models:${GZ_ENV_WS}/src/asv_wave_sim/gz-waves-models/world_models:${GZ_ENV_WS}/src/asv_wave_sim/gz-waves-models/worlds \
     GZ_SIM_SYSTEM_PLUGIN_PATH=${ARDU_WS}/install/ardupilot_gazebo/lib/ardupilot_gazebo/lib:${GZ_ENV_WS}/install/lib \
-    GZ_GUI_PLUGIN_PATH=${ARDU_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control/build
+    GZ_GUI_PLUGIN_PATH=${GZ_ENV_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control/build
 
 RUN echo "root ALL=(ALL)  ALL" >> /etc/sudoers \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc \
