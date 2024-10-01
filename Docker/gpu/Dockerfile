@@ -2,11 +2,6 @@ FROM nvidia/cuda:12.0.0-cudnn8-devel-ubuntu22.04 AS main-setup
 
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG SKIP_AP_EXT_ENV=0
-ARG SKIP_AP_GRAPHIC_ENV=1
-ARG SKIP_AP_COV_ENV=1
-ARG SKIP_AP_GIT_CHECK=1
-ARG DO_AP_STM_ENV=1
 
 ENV ROS_DISTRO=humble \
     GZ_VERSION=harmonic \
@@ -220,10 +215,8 @@ RUN cd ${ARDU_WS}/src && \
     cmake .. && make
     
 ENV GZ_SIM_RESOURCE_PATH=${ARDU_WS}/src/ardupilot_gazebo/worlds:${ARDU_WS}/src/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/world_models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/worlds \
-    GZ_SIM_SYSTEM_PLUGIN_PATH=${ARDU_WS}/install/ardupilot_gazebo/lib/ardupilot_gazebo:${ARDU_WS}/install/lib \
+    GZ_SIM_SYSTEM_PLUGIN_PATH=${ARDU_WS}/install/ardupilot_gazebo/lib/ardupilot_gazebo/lib:${ARDU_WS}/install/lib \
     GZ_GUI_PLUGIN_PATH=${ARDU_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control/build
-
-###################################### aew
 
 RUN echo "root ALL=(ALL)  ALL" >> /etc/sudoers \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc \
