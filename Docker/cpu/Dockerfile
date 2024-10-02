@@ -67,7 +67,7 @@ RUN apt-get update && apt-get upgrade pip -y && \
     opencv-python-headless \
     pyyaml \
     pyquaternion \
-    pyserial
+    pyserial 
 
 ###################################### ros2 ####################################
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
@@ -146,3 +146,15 @@ RUN echo "root ALL=(ALL)  ALL" >> /etc/sudoers \
 
 ENV XLA_PYTHON_CLIENT_PREALLOCATE=false
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
+
+###################################### ardupilot ################################
+RUN usermod -aG sudo uwe
+USER uwe
+RUN cd ~/ros2_docker/ros2_ws/src && git clone git@github.com:ArduPilot/ardupilot.git --recurse-submodules && \
+    cd ardupilot && Tools/environment_install/install-prereqs-ubuntu.sh -y
+
+RUN sudo apt-get install python3-dev python3-opencv python3-wxgtk4.0 python3-pip python3-matplotlib python3-lxml python3-pygame
+
+RUN pip3 install PyYAML mavproxy --user
+
+RUN echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc && source ~/.bashrc && export DISPLAY=:0
