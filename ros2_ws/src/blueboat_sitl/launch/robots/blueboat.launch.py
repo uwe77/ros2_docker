@@ -114,9 +114,9 @@ def generate_launch_description():
         #     "model://wildthumper",
         #     "package://ardupilot_sitl_models/models/wildthumper")
 
-        # robot_desc = robot_desc.replace(
-        #     "model://wildthumper_with_lidar",
-        #     "package://ardupilot_sitl_models/models/wildthumper_with_lidar")
+        robot_desc = robot_desc.replace(
+            "models://blueboat",
+            "package://blueboat_sitl/models/blueboat")
 
     # Publish /tf and /tf_static.
     robot_state_publisher = Node(

@@ -55,21 +55,21 @@ def generate_launch_description():
     )
 
     # RViz.
-    # rviz = Node(
-    #     package="rviz2",
-    #     executable="rviz2",
-    #     arguments=["-d", f'{Path(pkg_project_bringup) / "rviz" / "wildthumper.rviz"}'],
-    #     condition=IfCondition(LaunchConfiguration("rviz")),
-    # )
+    rviz = Node(
+        package="rviz2",
+        executable="rviz2",
+        arguments=["-d", f'{Path(pkg_project_gazebo) / "rviz" / "blueboat.rviz"}'],
+        condition=IfCondition(LaunchConfiguration("rviz")),
+    )
 
     return LaunchDescription(
         [
-            # DeclareLaunchArgument(
-            #     "rviz", default_value="true", description="Open RViz."
-            # ),
+            DeclareLaunchArgument(
+                "rviz", default_value="true", description="Open RViz."
+            ),
             gz_sim_server,
             gz_sim_gui,
             rover,
-            # rviz,
+            rviz,
         ]
     )

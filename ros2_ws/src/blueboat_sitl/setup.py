@@ -26,6 +26,12 @@ setup(
 
         (os.path.join('share', package_name, 'worlds'),
             glob(os.path.join('worlds', '*.sdf'))),
+
+        (os.path.join('share', package_name, 'gz_bridges'),
+            glob(os.path.join('gz_bridges', '*.yaml'))),
+
+        (os.path.join('share', package_name, 'rviz'),
+            glob(os.path.join('rviz', '*.rviz'))),
     
     ] + model_data_files,
     install_requires=['setuptools'],
