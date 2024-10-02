@@ -1,5 +1,5 @@
-# ros2 docker
+# ros2 gazebo
 ## Clone REPO
 ```
-git clone git@github.com:uwe77/ros2_docker.git --recurse-submodules
+git clone git@github.com:ARG-NCTU/ros2_gazebo.git --recurse-submodules
 ```

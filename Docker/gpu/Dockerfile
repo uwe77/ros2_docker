@@ -2,16 +2,11 @@ FROM nvidia/cuda:12.0.0-cudnn8-devel-ubuntu22.04 AS main-setup
 
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG SKIP_AP_EXT_ENV=0
-ARG SKIP_AP_GRAPHIC_ENV=1
-ARG SKIP_AP_COV_ENV=1
-ARG SKIP_AP_GIT_CHECK=1
-ARG DO_AP_STM_ENV=1
 
 ENV ROS_DISTRO=humble \
     GZ_VERSION=harmonic \
     SHELL=/bin/bash \
-    NB_USER=uwe \
+    NB_USER=arg \
     NB_UID=1000
 
 RUN echo 'Etc/UTC' > /etc/timezone && \
@@ -208,26 +203,26 @@ ENV PATH=$PATH:${ARDU_WS}/src/ardupilot/Tools/autotest
 ENV PATH=/usr/lib/ccache:$PATH
 
 ###################################### asv water sim ################################
-
-RUN cd ${ARDU_WS}/src && \
+ARG GZ_ENV_WS=/opt/gzenv_ws
+RUN mkdir -p ${GZ_ENV_WS}/src && \
+    cd ${GZ_ENV_WS}/src && \
     git clone https://github.com/uwe77/asv_wave_sim.git && cd .. && \
-    colcon build --packages-select asv_water_sim --symlink-install --cmake-args \
+    colcon build --symlink-install --merge-install --cmake-args \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DBUILD_TESTING=ON \
     -DCMAKE_CXX_STANDARD=17 && \
-    cd ${ARDU_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control && \
+    cd ${GZ_ENV_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control && \
     mkdir build && cd build && \
     cmake .. && make
     
-ENV GZ_SIM_RESOURCE_PATH=${ARDU_WS}/src/ardupilot_gazebo/worlds:${ARDU_WS}/src/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/world_models:${ARDU_WS}/src/asv_wave_sim/gz-waves-models/worlds \
-    GZ_SIM_SYSTEM_PLUGIN_PATH=${ARDU_WS}/install/ardupilot_gazebo/lib/ardupilot_gazebo:${ARDU_WS}/install/lib \
-    GZ_GUI_PLUGIN_PATH=${ARDU_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control/build
-
-###################################### aew
+ENV GZ_SIM_RESOURCE_PATH=${ARDU_WS}/src/ardupilot_gazebo/worlds:${ARDU_WS}/src/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:${GZ_ENV_WS}/src/asv_wave_sim/gz-waves-models/models:${GZ_ENV_WS}/src/asv_wave_sim/gz-waves-models/world_models:${GZ_ENV_WS}/src/asv_wave_sim/gz-waves-models/worlds \
+    GZ_SIM_SYSTEM_PLUGIN_PATH=${ARDU_WS}/install/ardupilot_gazebo/lib/ardupilot_gazebo/lib:${GZ_ENV_WS}/install/lib \
+    GZ_GUI_PLUGIN_PATH=${GZ_ENV_WS}/src/asv_wave_sim/gz-waves/src/gui/plugins/waves_control/build
 
 RUN echo "root ALL=(ALL)  ALL" >> /etc/sudoers \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc \
-    && echo "source ${ARDU_WS}/install/setup.bash" >> ${HOME}/.bashrc
+    && echo "source ${ARDU_WS}/install/setup.bash" >> ${HOME}/.bashrc \
+    && echo "source ${GZ_ENV_WS}/install/setup.bash" >> ${HOME}/.bashrc
 
 ENV XLA_PYTHON_CLIENT_PREALLOCATE=false
 ENV HF_HUB_ENABLE_HF_TRANSFER=1

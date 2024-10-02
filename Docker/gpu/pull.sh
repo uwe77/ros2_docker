@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-REPOSITORY="uwwee/ubuntu22.04"
-TAG="ros2-gpu"
+REPOSITORY="argnctu/ros2-gz"
+TAG="gpu"
 
 IMG="${REPOSITORY}:${TAG}"
 

@@ -2,14 +2,14 @@
 
 ARGS=("$@")
 
-REPOSITORY="uwwee/ubuntu22.04"
-TAG="ros2-gpu"
+REPOSITORY="argnctu/ros2-gz"
+TAG="gpu"
 
 IMG="${REPOSITORY}:${TAG}"
 
-USER_NAME="uwe"
-REPO_NAME="ros2_docker"
-CONTAINER_NAME="ubuntu22.04-ros2-gpu"
+USER_NAME="arg"
+REPO_NAME="ros2_gazebo"
+CONTAINER_NAME="ros2_gazebo-gpu"
 
 CONTAINER_ID=$(docker ps -aqf "ancestor=${IMG}")
 if [ $CONTAINER_ID ]; then
