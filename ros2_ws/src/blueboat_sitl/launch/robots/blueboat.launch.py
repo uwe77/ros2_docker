@@ -43,7 +43,7 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     """Generate a launch description for a wild thumper rover."""
     pkg_ardupilot_sitl = get_package_share_directory("ardupilot_sitl")
-    pkg_ardupilot_sitl_models = get_package_share_directory("ardupilot_sitl_models")
+    pkg_ardupilot_sitl_models = get_package_share_directory("blueboat_sitl")
     pkg_project_bringup = get_package_share_directory("blueboat_sitl")
 
     # Include component launch files.

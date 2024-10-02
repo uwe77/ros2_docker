@@ -4,6 +4,11 @@ from setuptools import find_packages, setup
 
 package_name = 'blueboat_sitl'
 
+model_data_files = [
+    (os.path.join('share', package_name, root), [os.path.join(root, f) for f in files])
+    for root, dirs, files in os.walk('models')
+]
+
 setup(
     name=package_name,
     version='0.0.0',
@@ -19,13 +24,10 @@ setup(
         (os.path.join('share', package_name, 'launch/robots'),
             glob(os.path.join('launch/robots', '*.launch.py'))),
 
-        # (os.path.join('share', package_name, 'models'),
-        #     glob(os.path.join('models', '*'),recursive=True)),
-
         (os.path.join('share', package_name, 'worlds'),
             glob(os.path.join('worlds', '*.sdf'))),
     
-    ],
+    ] + model_data_files,
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='root',
